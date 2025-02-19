@@ -5,6 +5,8 @@
 #include "Engine/DeveloperSettings.h"
 #include "CoreMinimal.h"
 #include "DesktopPlatformModule.h"
+#include "Framework/Notifications/NotificationManager.h"
+#include "Widgets/Notifications/SNotificationList.h"
 //#include "Interfaces/IPluginManager.h"
 //#include "EditorFont.h"
 //#include "PropertyEditorDelegates.h"
@@ -164,64 +166,24 @@ public:
 	void HandleConverterProp(FPropertyChangedEvent& PropertyChangedEvent);
 	void ShowSuccess(FProperty* InProperty, float Duration);
 	
+	
 	static void LaunchAndCaptureProcessOutput(const FString& FontForgePath, const FString& Args)
 	{
 	    UE_LOG(LogTemp, Log, TEXT("Launching process:"));
 	    UE_LOG(LogTemp, Log, TEXT("Executable: %s"), *FontForgePath);
 	    UE_LOG(LogTemp, Log, TEXT("Arguments: %s"), *Args);
-
-	    // Create a pipe for capturing the output (stdout/stderr)
-	    void* ReadPipe = nullptr;
 	    void* WritePipe = nullptr;
-	    if (!FPlatformProcess::CreatePipe(ReadPipe, WritePipe))
-	    {
-	        UE_LOG(LogTemp, Error, TEXT("Failed to create pipe for process output."));
-	        return;
-	    }
-
-	    // Launch the process with our write pipe so its output is redirected
 	    FProcHandle ProcHandle = FPlatformProcess::CreateProc(
 	        *FontForgePath, 
 	        *Args, 
-	        false,      // Not detached
-	        false,      // Not hidden
-	        false,      // Not really hidden
-	        nullptr,    // Process ID not needed
-	        0,          // Default priority
-	        nullptr,    // No working directory override
-	        WritePipe   // Pass the write pipe for output capturing
+	        false,
+	        true,
+	        false,
+	        nullptr,
+	        0,
+	        nullptr,
+	        WritePipe
 	    );
-
-	    if (!ProcHandle.IsValid())
-	    {
-	        UE_LOG(LogTemp, Error, TEXT("Failed to launch process."));
-	        FPlatformProcess::ClosePipe(ReadPipe, WritePipe);
-	        return;
-	    }
-
-	    // Continuously read the output until the process finishes
-	    while (FPlatformProcess::IsProcRunning(ProcHandle))
-	    {
-	        // Read whatever is available from the pipe
-	        FString NewOutput = FPlatformProcess::ReadPipe(ReadPipe);
-	        if (!NewOutput.IsEmpty())
-	        {
-	            // Print output line by line (or however you prefer)
-	            UE_LOG(LogTemp, Log, TEXT("%s"), *NewOutput);
-	        }
-	        // Sleep briefly to avoid a busy wait
-	        FPlatformProcess::Sleep(0.1f);
-	    }
-
-	    // Read any remaining output after the process has terminated
-	    FString RemainingOutput = FPlatformProcess::ReadPipe(ReadPipe);
-	    if (!RemainingOutput.IsEmpty())
-	    {
-	        UE_LOG(LogTemp, Log, TEXT("%s"), *RemainingOutput);
-	    }
-
-	    // Close the pipe handles and process handle
-	    FPlatformProcess::ClosePipe(ReadPipe, WritePipe);
 	    FPlatformProcess::CloseProc(ProcHandle);
 
 	    UE_LOG(LogTemp, Log, TEXT("Process has completed."));
