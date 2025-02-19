@@ -1,6 +1,8 @@
 // Copyright 2024 Daniel Karasov Lerner. All Rights Reserved.
 
 #include "UDevEditor.h"
+
+#include "DebugHeader.h"
 #include "Interfaces/IPluginManager.h"
 #include "Logging/StructuredLog.h"
 #include "HAL/PlatformTime.h"
@@ -443,7 +445,6 @@ TSharedPtr<SWidget> UDevEditor::GetCustomSettingsWidget() const
 
 void UDevEditor::ConvertFont(FString InFontPath, FString OutputPath)
 {
-   
     if (!FPaths::FileExists(*InFontPath))
     {
         InFontPath = FPaths::Combine(FPaths::ProjectDir(), InFontPath);
@@ -475,6 +476,8 @@ void UDevEditor::ConvertFont(FString InFontPath, FString OutputPath)
     // UE_LOGFMT(LogTemp, Warning, "In: {0} Out: {1} FFPath: {2} Script: {3}", InPathExists, OutputPathExists, FontForgePathExists, ScriptFileExists);
     if (FPaths::FileExists(*OutputPath))
     {
+        DebugHeader::ShowNotifyInfo(FString("File already exists in directory"), SNotificationItem::CS_Fail);
+
         UE_LOGFMT(LogTemp, Warning, "File already exists in directory.");
         return;
     }
@@ -482,6 +485,12 @@ void UDevEditor::ConvertFont(FString InFontPath, FString OutputPath)
     FString Args = FString::Printf(TEXT("-lang=py -script \"%s\" \"%s\" \"%s\""), *ScriptFile, *InFontPath, *OutputPath);
     UE_LOG(LogTemp, Warning, TEXT("FontForge args: %s %s"), *FontForgePath, *Args);
     LaunchAndCaptureProcessOutput(FontForgePath, Args);
+
+    FString Message = "Successfully converted font: ";
+    Message.Append(Filename);
+    
+
+    DebugHeader::ShowNotifyInfo(FString(Message), SNotificationItem::CS_Success);
 }
 
 void UDevEditor::ConvertFontFolder(FProperty* InProperty, FString Path)
