@@ -350,6 +350,7 @@ bool UDevEditor::ResetToDefaults(FProperty* InProperty)
             else if (PropertyName.Equals("FontPath"))
             {
                 FontPath = *IPluginManager::Get().FindPlugin(TEXT("EditorFont"))->GetContentDir().Append("/TempFonts");
+                CreateTempFontsFolder();
                 continue;
             }
             else if (PropertyName.Equals("FontChanger"))
@@ -568,8 +569,7 @@ void UDevEditor::ShowSuccess(FProperty* InProperty, float Duration)
                     // Check if the elapsed time has reached the desired delay.
                     if (FPlatformTime::Seconds() - StartTime >= Duration)
                     {
-                        // Your custom logic goes here.
-                        UE_LOG(LogTemp, Log, TEXT("Delayed event executed after %f seconds."), Duration);
+                        // UE_LOG(LogTemp, Log, TEXT("Delayed event executed after %f seconds."), Duration);
                         FontChanger.FilePath = "";
                         // Return false to remove the ticker from the ticker list.
                         return false;

@@ -237,13 +237,13 @@ void FEFDetails::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
 								.HAlign(EHorizontalAlignment::HAlign_Left)
 								.OnClicked_Lambda([MyDevSettings, FontsPath]()
 									{
+										FString blagh = MyDevSettings->FontPath;
 										FString bleh = MyDevSettings->FilePicker(FontsPath->GetProperty()->GetName()/"Picker");
-										MyDevSettings->FontPath = bleh;
 										if (bleh == FString(""))
 										{
-											MyDevSettings->FontPath = MyDevSettings->PluginContentPath + "/TempFonts";
-											MyDevSettings->SaveSettingToConfig();
+											bleh = blagh;
 										}
+										MyDevSettings->FontPath = bleh;
 										MyDevSettings->SaveSettingToConfig();
 										return FReply::Handled();
 									})
@@ -266,6 +266,7 @@ void FEFDetails::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
 									{
 										MyDevSettings->FontPath = MyDevSettings->PluginContentPath + "/TempFonts";
 										MyDevSettings->SaveSettingToConfig();
+										MyDevSettings->CreateTempFontsFolder();
 										return FReply::Handled();
 									})
 						]
